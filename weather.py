@@ -34,6 +34,7 @@ __version__ = "0.0.12"
 #   Raspberry Pi Weather Display
 #   Original By: Jim Kemp          10/25/2014
 #   Modified By: Gene Liverman    12/30/2017 & multiple times since
+#   Further modifications By: Thomas Fänge 2020-02-25 and onwards ... ;)
 ###############################################################################
 # standard imports
 import datetime
