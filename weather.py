@@ -54,6 +54,9 @@ import requests
 # local imports
 import config
 
+# MQTT library
+import paho.mqtt.client as mqtt
+
 # globals
 MODE = 'd'  # Default to weather mode.
 MOUSE_X, MOUSE_Y = 0, 0
@@ -65,6 +68,56 @@ def exit_gracefully(signum, frame):
 
 
 signal.signal(signal.SIGTERM, exit_gracefully)
+
+## MQTT CODE #####
+
+nBaro = "--"
+nHumid = "--"
+nTemp = "--"
+nTempA = "--"
+
+# The callback for when the client receives a CONNACK response from the server.
+def on_connect(client, userdata, flags, rc):
+	print("Connected with result code "+str(rc))
+
+	# Subscribing in on_connect() means that if we lose the connection and
+	# reconnect then subscriptions will be renewed.
+	client.subscribe("nodeit/status/#")
+	client.subscribe("cmnd/weather")
+
+mode = 'w'
+
+# The callback for when a PUBLISH message is received from the server.
+def on_message(client, userdata, msg):
+	global mode, dispTO, nBaro, nTemp, nTempA, nHumid, running
+	print(msg.topic+" "+str(msg.payload))
+	if msg.topic == 'nodeit/status/pressure':
+		nBaro = str(msg.payload)
+	if msg.topic == 'nodeit/status/temp2':
+		nTemp = str(msg.payload)
+	if msg.topic == 'nodeit/status/temp3':
+		nTempA = str(msg.payload)
+	if msg.topic == 'nodeit/status/humidity':
+		nHumid = str(msg.payload)
+		mode = 'w'
+	if msg.topic == 'cmnd/weather':
+		if str(msg.payload) == 'stop':
+			running = False
+		if str(msg.payload) == 'weather':
+			mode = 'w'
+		if str(msg.payload) == 'calendar':
+			mode = 'c'
+		if str(msg.payload) == 'help':
+			mode = 'h'
+	dispTO = 0
+
+client = mqtt.Client("WeaterStation")
+client.on_connect = on_connect
+client.on_message = on_message
+
+client.username_pw_set(config.MOSSA_MQTT,config.MOSSA_PASSW)
+client.connect(config.MQTT_BROKER, 1883, 60)
+client.loop_start()
 
 
 def deg_to_compass(degrees):
@@ -468,6 +521,7 @@ class my_display:
             self.ymax * y_start_position))
 
     def disp_weather(self):
+        global nBaro, nTemp, nTempA, nHumid
         # Fill the screen with black
         self.screen.fill((0, 0, 0))
         xmin = 10
@@ -484,20 +538,25 @@ class my_display:
             'Känns som:', int(round(self.weather.apparentTemperature)),
             True)
 
-        try:
-            wind_bearing = self.weather.windBearing
-            wind_direction = deg_to_compass(wind_bearing) + ' @ '
-        except AttributeError:
-            wind_direction = ''
-        wind_txt = wind_direction + str(
-            int(round(self.weather.windSpeed))) + \
-            ' ' + get_windspeed_abbreviation()
+#        try:
+#            wind_bearing = self.weather.windBearing
+#            wind_direction = deg_to_compass(wind_bearing) + ' @ '
+#        except AttributeError:
+#            wind_direction = ''
+#        wind_txt = wind_direction + str(
+#            int(round(self.weather.windSpeed))) + \
+#            ' ' + get_windspeed_abbreviation()
+#        self.display_conditions_line(
+#            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
-            'Vind:', wind_txt, False, 1)
+            'Annexet:', nTempA, False, 1)
 
         self.display_conditions_line(
-            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
+            'Fuktighet:', nHumid + '%',
+#            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
             False, 2)
+        self.display_conditions_line(
+            'Lufttryck:', nBaro + 'hPa', False, 3)
 
         # Skipping multiplier 3 (line 4)
 
@@ -541,20 +600,25 @@ class my_display:
             'Känns som:', int(round(self.weather.apparentTemperature)),
             True)
 
-        try:
-            wind_bearing = self.weather.windBearing
-            wind_direction = deg_to_compass(wind_bearing) + ' @ '
-        except AttributeError:
-            wind_direction = ''
-        wind_txt = wind_direction + str(
-            int(round(self.weather.windSpeed))) + \
-            ' ' + get_windspeed_abbreviation()
+#        try:
+#            wind_bearing = self.weather.windBearing
+#            wind_direction = deg_to_compass(wind_bearing) + ' @ '
+#        except AttributeError:
+#            wind_direction = ''
+#        wind_txt = wind_direction + str(
+#            int(round(self.weather.windSpeed))) + \
+#            ' ' + get_windspeed_abbreviation()
+#        self.display_conditions_line(
+#            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
-            'Vind:', wind_txt, False, 1)
+            'Annexet:', nTempA, False, 1)
 
         self.display_conditions_line(
-            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
+            'Fuktighet:', nHumid + '%',
+#            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
             False, 2)
+        self.display_conditions_line(
+            'Lufttryck:', nBaro + 'hPa', False, 3)
 
         # Skipping multiplier 3 (line 4)
 
@@ -599,11 +663,12 @@ class my_display:
         pygame.display.update()
 
     def disp_current_temp(self, font_name, text_color):
+        global nTemp
         # Outside Temp
         outside_temp_font = pygame.font.SysFont(
             font_name, int(self.ymax * (0.5 - 0.15) * 0.6), bold=1)
-        txt = outside_temp_font.render(
-            str(int(round(self.weather.temperature))), True, text_color)
+        txt = outside_temp_font.render(nTemp, True, text_color)
+        #    str(int(round(self.weather.temperature))), True, text_color)
         (txt_x, txt_y) = txt.get_size()
         degree_font = pygame.font.SysFont(
             font_name, int(self.ymax * (0.5 - 0.15) * 0.3), bold=1)
@@ -923,6 +988,10 @@ while running:
                 print("Decoding JSON has failed", sys.exc_info()[0])
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
+            # Publish a tick to check notify that we are alive ...
+			print("Publish tick!")
+			client.publish("weather/tick","on")
+
     # Hourly Weather Display Mode
     elif MODE == 'h':
         # Update / Refresh the display after each second.
@@ -938,6 +1007,9 @@ while running:
                 print("Decoding JSON has failed", sys.exc_info()[0])
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
+            # Publish a tick to check notify that we are alive ...
+			print("Publish tick!")
+			client.publish("weather/tick","on")
     # Info Screen Display Mode
     elif MODE == 'i':
         # Pace the screen updates to once per second.
@@ -959,6 +1031,9 @@ while running:
                 print("Decoding JSON has failed", sys.exc_info()[0])
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
+            # Publish a tick to check notify that we are alive ...
+			print("Publish tick!")
+			client.publish("weather/tick","on")
 
     (inDaylight, dayHrs, dayMins, seconds_til_daylight,
      delta_seconds_til_dark) = daylight(my_disp.weather)
