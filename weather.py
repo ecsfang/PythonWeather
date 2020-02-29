@@ -543,11 +543,10 @@ class my_display:
             'Uterum:', nTempU, True)
 
         self.display_conditions_line(
-            'Annexet:', nTempA, apparentTemperature, 1)
+            'Annexet:', nTempA, True, 1)
 
         self.display_conditions_line(
-            'Fuktighet:', nHumid + '%',
-            False, 2)
+            'Fuktighet:', nHumid + '%', False, 2)
 
         self.display_conditions_line(
             'Lufttryck:', nBaro + ' hPa', False, 3)
@@ -596,9 +595,8 @@ class my_display:
             'Annexet:', nTempA, True, 1)
 
         self.display_conditions_line(
-            'Fuktighet:', nHumid + '%',
+            'Fuktighet:', nHumid + '%', False, 2)
 
-            False, 2)
         self.display_conditions_line(
             'Lufttryck:', nBaro + ' hPa', False, 3)
 
