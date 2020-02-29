@@ -94,15 +94,15 @@ def on_message(client, userdata, msg):
 	global mode, dispTO, nBaro, nTemp, nTempA, nTempU, nHumid, running
 	print(msg.topic+" "+str(msg.payload))
 	if msg.topic == 'nodeit/status/pressure':
-		nBaro = str(msg.payload)
+		nBaro = str(msg.payload,'utf-8')
 	if msg.topic == 'nodeit/status/temp2':
-		nTemp = str(msg.payload)
+		nTemp = str(msg.payload,'utf-8')
 	if msg.topic == 'nodeit/status/temp3':
-		nTempA = str(msg.payload)
+		nTempA = str(msg.payload,'utf-8')
 	if msg.topic == 'uterum/status/temp':
-		nTempU = str(msg.payload)
+		nTempU = str(msg.payload,'utf-8')
 	if msg.topic == 'nodeit/status/humidity':
-		nHumid = str(msg.payload)
+		nHumid = str(msg.payload,'utf-8')
 		mode = 'w'
 	if msg.topic == 'cmnd/weather':
 		if str(msg.payload) == 'stop':
@@ -550,7 +550,7 @@ class my_display:
             False, 2)
 
         self.display_conditions_line(
-            'Lufttryck:', nBaro + 'hPa', False, 3)
+            'Lufttryck:', nBaro + ' hPa', False, 3)
 
         if self.take_umbrella:
             umbrella_txt = 'Ta paraplyet!'
@@ -600,7 +600,7 @@ class my_display:
 
             False, 2)
         self.display_conditions_line(
-            'Lufttryck:', nBaro + 'hPa', False, 3)
+            'Lufttryck:', nBaro + ' hPa', False, 3)
 
         if self.take_umbrella:
             umbrella_txt = 'Ta paraplyet!'
@@ -954,8 +954,8 @@ while running:
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
             # Publish a tick to check notify that we are alive ...
-			print("Publish tick!")
-			client.publish("weather/tick","on")
+            print("Publish tick!")
+            client.publish("weather/tick","on")
 
     # Hourly Weather Display Mode
     elif MODE == 'h':
@@ -973,8 +973,8 @@ while running:
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
             # Publish a tick to check notify that we are alive ...
-			print("Publish tick!")
-			client.publish("weather/tick","on")
+            print("Publish tick!")
+            client.publish("weather/tick","on")
     # Info Screen Display Mode
     elif MODE == 'i':
         # Pace the screen updates to once per second.
@@ -997,8 +997,8 @@ while running:
             except BaseException:
                 print("Unexpected error:", sys.exc_info()[0])
             # Publish a tick to check notify that we are alive ...
-			print("Publish tick!")
-			client.publish("weather/tick","on")
+            print("Publish tick!")
+            client.publish("weather/tick","on")
 
     (inDaylight, dayHrs, dayMins, seconds_til_daylight,
      delta_seconds_til_dark) = daylight(my_disp.weather)
