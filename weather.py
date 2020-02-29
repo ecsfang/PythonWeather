@@ -538,20 +538,7 @@ class my_display:
         self.disp_time_date(font_name, text_color)
         self.disp_current_temp(font_name, text_color)
         self.disp_summary()
-#        self.display_conditions_line(
-#            'Känns som:', int(round(self.weather.apparentTemperature)),
-#            True)
 
-#        try:
-#            wind_bearing = self.weather.windBearing
-#            wind_direction = deg_to_compass(wind_bearing) + ' @ '
-#        except AttributeError:
-#            wind_direction = ''
-#        wind_txt = wind_direction + str(
-#            int(round(self.weather.windSpeed))) + \
-#            ' ' + get_windspeed_abbreviation()
-#        self.display_conditions_line(
-#            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
             'Uterum:', nTempU, True)
 
@@ -560,12 +547,10 @@ class my_display:
 
         self.display_conditions_line(
             'Fuktighet:', nHumid + '%',
-#            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
             False, 2)
+
         self.display_conditions_line(
             'Lufttryck:', nBaro + 'hPa', False, 3)
-
-        # Skipping multiplier 3 (line 4)
 
         if self.take_umbrella:
             umbrella_txt = 'Ta paraplyet!'
@@ -603,20 +588,7 @@ class my_display:
         self.disp_time_date(font_name, text_color)
         self.disp_current_temp(font_name, text_color)
         self.disp_summary()
-#        self.display_conditions_line(
-#            'Känns som:', int(round(self.weather.apparentTemperature)),
-#            True)
 
-#        try:
-#            wind_bearing = self.weather.windBearing
-#            wind_direction = deg_to_compass(wind_bearing) + ' @ '
-#        except AttributeError:
-#            wind_direction = ''
-#        wind_txt = wind_direction + str(
-#            int(round(self.weather.windSpeed))) + \
-#            ' ' + get_windspeed_abbreviation()
-#        self.display_conditions_line(
-#            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
             'Uterum:', nTempU, True)
 
@@ -625,12 +597,10 @@ class my_display:
 
         self.display_conditions_line(
             'Fuktighet:', nHumid + '%',
-#            'Fuktighet:', str(int(round((self.weather.humidity * 100)))) + '%',
+
             False, 2)
         self.display_conditions_line(
             'Lufttryck:', nBaro + 'hPa', False, 3)
-
-        # Skipping multiplier 3 (line 4)
 
         if self.take_umbrella:
             umbrella_txt = 'Ta paraplyet!'
@@ -642,13 +612,6 @@ class my_display:
         this_hour = self.weather.hourly[0]
         this_hour_24_int = int(datetime.datetime.fromtimestamp(
             this_hour.time).strftime("%H"))
-#        if this_hour_24_int <= 11:
-#            ampm = 'a.m.'
-#        else:
-#            ampm = 'p.m.'
-#        this_hour_12_int = int(datetime.datetime.fromtimestamp(
-#            this_hour.time).strftime("%I"))
-        #this_hour_string = "{} {}".format(str(this_hour_12_int), ampm)
         this_hour_string = "{}".format(str(this_hour_24_int))
         multiplier = 1
         self.display_subwindow(this_hour, this_hour_string, multiplier)
@@ -658,14 +621,7 @@ class my_display:
             this_hour = self.weather.hourly[future_hour + 1]
             this_hour_24_int = int(datetime.datetime.fromtimestamp(
                 this_hour.time).strftime("%H"))
-#            if this_hour_24_int <= 11:
-#                ampm = 'a.m.'
-#            else:
-#                ampm = 'p.m.'
-#            this_hour_12_int = int(datetime.datetime.fromtimestamp(
-#                this_hour.time).strftime("%I"))
             this_hour_string = "{}".format(str(this_hour_24_int))
-            #this_hour_string = "{} {}".format(str(this_hour_12_int), ampm)
             multiplier += 2
             self.display_subwindow(this_hour, this_hour_string, multiplier)
 
@@ -678,7 +634,6 @@ class my_display:
         outside_temp_font = pygame.font.SysFont(
             font_name, int(self.ymax * (0.5 - 0.15) * 0.6), bold=1)
         txt = outside_temp_font.render(nTemp, True, text_color)
-        #    str(int(round(self.weather.temperature))), True, text_color)
         (txt_x, txt_y) = txt.get_size()
         degree_font = pygame.font.SysFont(
             font_name, int(self.ymax * (0.5 - 0.15) * 0.3), bold=1)
