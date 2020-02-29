@@ -75,6 +75,7 @@ nBaro = "--"
 nHumid = "--"
 nTemp = "--"
 nTempA = "--"
+nTempU = "--"
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
@@ -83,13 +84,14 @@ def on_connect(client, userdata, flags, rc):
 	# Subscribing in on_connect() means that if we lose the connection and
 	# reconnect then subscriptions will be renewed.
 	client.subscribe("nodeit/status/#")
+	client.subscribe("uterum/status/#")
 	client.subscribe("cmnd/weather")
 
 mode = 'w'
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-	global mode, dispTO, nBaro, nTemp, nTempA, nHumid, running
+	global mode, dispTO, nBaro, nTemp, nTempA, nTempU, nHumid, running
 	print(msg.topic+" "+str(msg.payload))
 	if msg.topic == 'nodeit/status/pressure':
 		nBaro = str(msg.payload)
@@ -97,6 +99,8 @@ def on_message(client, userdata, msg):
 		nTemp = str(msg.payload)
 	if msg.topic == 'nodeit/status/temp3':
 		nTempA = str(msg.payload)
+	if msg.topic == 'uterum/status/temp':
+		nTempU = str(msg.payload)
 	if msg.topic == 'nodeit/status/humidity':
 		nHumid = str(msg.payload)
 		mode = 'w'
@@ -521,7 +525,7 @@ class my_display:
             self.ymax * y_start_position))
 
     def disp_weather(self):
-        global nBaro, nTemp, nTempA, nHumid
+        global nBaro, nTemp, nTempA, nTempU, nHumid
         # Fill the screen with black
         self.screen.fill((0, 0, 0))
         xmin = 10
@@ -534,9 +538,9 @@ class my_display:
         self.disp_time_date(font_name, text_color)
         self.disp_current_temp(font_name, text_color)
         self.disp_summary()
-        self.display_conditions_line(
-            'Känns som:', int(round(self.weather.apparentTemperature)),
-            True)
+#        self.display_conditions_line(
+#            'Känns som:', int(round(self.weather.apparentTemperature)),
+#            True)
 
 #        try:
 #            wind_bearing = self.weather.windBearing
@@ -549,7 +553,10 @@ class my_display:
 #        self.display_conditions_line(
 #            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
-            'Annexet:', nTempA, False, 1)
+            'Uterum:', nTempU, True)
+
+        self.display_conditions_line(
+            'Annexet:', nTempA, apparentTemperature, 1)
 
         self.display_conditions_line(
             'Fuktighet:', nHumid + '%',
@@ -596,9 +603,9 @@ class my_display:
         self.disp_time_date(font_name, text_color)
         self.disp_current_temp(font_name, text_color)
         self.disp_summary()
-        self.display_conditions_line(
-            'Känns som:', int(round(self.weather.apparentTemperature)),
-            True)
+#        self.display_conditions_line(
+#            'Känns som:', int(round(self.weather.apparentTemperature)),
+#            True)
 
 #        try:
 #            wind_bearing = self.weather.windBearing
@@ -611,7 +618,10 @@ class my_display:
 #        self.display_conditions_line(
 #            'Vind:', wind_txt, False, 1)
         self.display_conditions_line(
-            'Annexet:', nTempA, False, 1)
+            'Uterum:', nTempU, True)
+
+        self.display_conditions_line(
+            'Annexet:', nTempA, True, 1)
 
         self.display_conditions_line(
             'Fuktighet:', nHumid + '%',
@@ -632,12 +642,12 @@ class my_display:
         this_hour = self.weather.hourly[0]
         this_hour_24_int = int(datetime.datetime.fromtimestamp(
             this_hour.time).strftime("%H"))
-        if this_hour_24_int <= 11:
-            ampm = 'a.m.'
-        else:
-            ampm = 'p.m.'
-        this_hour_12_int = int(datetime.datetime.fromtimestamp(
-            this_hour.time).strftime("%I"))
+#        if this_hour_24_int <= 11:
+#            ampm = 'a.m.'
+#        else:
+#            ampm = 'p.m.'
+#        this_hour_12_int = int(datetime.datetime.fromtimestamp(
+#            this_hour.time).strftime("%I"))
         #this_hour_string = "{} {}".format(str(this_hour_12_int), ampm)
         this_hour_string = "{}".format(str(this_hour_24_int))
         multiplier = 1
@@ -648,12 +658,12 @@ class my_display:
             this_hour = self.weather.hourly[future_hour + 1]
             this_hour_24_int = int(datetime.datetime.fromtimestamp(
                 this_hour.time).strftime("%H"))
-            if this_hour_24_int <= 11:
-                ampm = 'a.m.'
-            else:
-                ampm = 'p.m.'
-            this_hour_12_int = int(datetime.datetime.fromtimestamp(
-                this_hour.time).strftime("%I"))
+#            if this_hour_24_int <= 11:
+#                ampm = 'a.m.'
+#            else:
+#                ampm = 'p.m.'
+#            this_hour_12_int = int(datetime.datetime.fromtimestamp(
+#                this_hour.time).strftime("%I"))
             this_hour_string = "{}".format(str(this_hour_24_int))
             #this_hour_string = "{} {}".format(str(this_hour_12_int), ampm)
             multiplier += 2
